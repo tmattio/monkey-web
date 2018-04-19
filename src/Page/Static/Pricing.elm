@@ -1,0 +1,98 @@
+module Page.Static.Pricing exposing (view)
+
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (alt, class, id, src, tabindex, type_, attribute)
+import Data exposing (Session)
+import Route exposing (Route)
+
+
+view : Maybe Session -> Html msg
+view session =
+    main_ [ id "content", class "container page", tabindex -1 ]
+        [ div [ class "pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center" ]
+            [ h1 [ class "display-4" ]
+                [ text "Pricing" ]
+            , p [ class "lead" ]
+                [ text "Monkey is free forever for public datasets. If you want or need to keep your data private, here is what we can do for you." ]
+            ]
+        , div [ class "card-deck mb-3 text-center" ]
+            [ div [ class "card mb-4 box-shadow" ]
+                [ div [ class "card-header" ]
+                    [ h4 [ class "my-0 font-weight-normal" ]
+                        [ text "Free" ]
+                    ]
+                , div [ class "card-body" ]
+                    [ h1 [ class "card-title pricing-card-title" ]
+                        [ text "$0" ]
+                    , ul [ class "list-unstyled mt-3 mb-4" ]
+                        [ li []
+                            [ text "Unlimited public datasets" ]
+                        , li []
+                            [ text "All of Monkey features" ]
+                        , li []
+                            [ text "Email support" ]
+                        , li []
+                            [ text "Help center access" ]
+                        ]
+                    , a
+                        [ class "btn btn-lg btn-block btn-outline-primary"
+                        , Route.href Route.Register
+                        , attribute "role" "button"
+                        ]
+                        [ text "Sign up for free" ]
+                    ]
+                ]
+            , div [ class "card mb-4 box-shadow" ]
+                [ div [ class "card-header" ]
+                    [ h4 [ class "my-0 font-weight-normal" ]
+                        [ text "Pro" ]
+                    ]
+                , div [ class "card-body" ]
+                    [ h1 [ class "card-title pricing-card-title" ]
+                        [ text "$15"
+                        , small
+                            [ class "text-muted" ]
+                            [ text "/ mo" ]
+                        ]
+                    , ul [ class "list-unstyled mt-3 mb-4" ]
+                        [ li []
+                            [ text "Up to 5 private datasets" ]
+                        , li []
+                            [ text "All of Monkey features" ]
+                        , li []
+                            [ text "Priority email support" ]
+                        , li []
+                            [ text "Help center access" ]
+                        ]
+                    , button [ type_ "button", class "btn btn-lg btn-block btn-primary" ]
+                        [ text "Get started" ]
+                    ]
+                ]
+            , div [ class "card mb-4 box-shadow" ]
+                [ div [ class "card-header" ]
+                    [ h4 [ class "my-0 font-weight-normal" ]
+                        [ text "Enterprise" ]
+                    ]
+                , div [ class "card-body" ]
+                    [ h1 [ class "card-title pricing-card-title" ]
+                        [ text "$29"
+                        , small
+                            [ class "text-muted" ]
+                            [ text "/ mo" ]
+                        ]
+                    , ul [ class "list-unstyled mt-3 mb-4" ]
+                        [ li []
+                            [ text "Unlimited private datasets" ]
+                        , li []
+                            [ text "All of Monkey features" ]
+                        , li []
+                            [ text "Phone and email support" ]
+                        , li []
+                            [ text "Help center access" ]
+                        ]
+                    , button [ type_ "button", class "btn btn-lg btn-block btn-primary" ]
+                        [ text "Contact us" ]
+                    ]
+                ]
+            ]
+        ]
