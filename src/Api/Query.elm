@@ -62,14 +62,10 @@ type alias SearchDatasetsRequiredArguments =
 
 {-| Perform a search across datasets.
 
-  - after - Returns the elements in the list that come after the specified global ID.
-  - before - Returns the elements in the list that come before the specified global ID.
-  - first - Returns the first n elements from the list.
-  - last - Returns the last n elements from the list.
   - query - The search string to look for.
 
 -}
-searchDatasets : (SearchDatasetsOptionalArguments -> SearchDatasetsOptionalArguments) -> SearchDatasetsRequiredArguments -> SelectionSet decodesTo Api.Object.Dataset -> Field (Maybe (List (Maybe decodesTo))) RootQuery
+searchDatasets : (SearchDatasetsOptionalArguments -> SearchDatasetsOptionalArguments) -> SearchDatasetsRequiredArguments -> SelectionSet decodesTo Api.Object.DatasetConnection -> Field (Maybe decodesTo) RootQuery
 searchDatasets fillInOptionals requiredArgs object =
     let
         filledInOptionals =
@@ -79,7 +75,7 @@ searchDatasets fillInOptionals requiredArgs object =
             [ Argument.optional "after" filledInOptionals.after Encode.string, Argument.optional "before" filledInOptionals.before Encode.string, Argument.optional "first" filledInOptionals.first Encode.int, Argument.optional "last" filledInOptionals.last Encode.int ]
                 |> List.filterMap identity
     in
-    Object.selectionField "searchDatasets" (optionalArgs ++ [ Argument.required "query" requiredArgs.query Encode.string ]) object (identity >> Decode.nullable >> Decode.list >> Decode.nullable)
+    Object.selectionField "searchDatasets" (optionalArgs ++ [ Argument.required "query" requiredArgs.query Encode.string ]) object (identity >> Decode.nullable)
 
 
 type alias UserRequiredArguments =

@@ -108,7 +108,7 @@ setRoute route model =
                     Nothing ->
                         ( { model | pageState = Loaded LandingPage }, Cmd.none )
 
-            Just (Route.Label owner datasetName)->
+            Just (Route.Label owner datasetName) ->
                 transition LabelLoaded (Label.init model.session owner datasetName)
 
             Just Route.Features ->
@@ -520,6 +520,9 @@ pageSubscriptions page =
     case page of
         Blank ->
             Sub.none
+
+        CreateDataset model ->
+            CreateDataset.subscriptions model |> Sub.map CreateDatasetMsg
 
         _ ->
             Sub.none

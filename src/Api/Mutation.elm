@@ -40,6 +40,12 @@ type alias DeleteDatasetRequiredArguments =
     { name : String, owner : String }
 
 
+{-|
+
+  - name - The unique name of the dataset.
+  - owner - The login field of a user or organization.
+
+-}
 deleteDataset : DeleteDatasetRequiredArguments -> SelectionSet decodesTo Api.Object.Dataset -> Field (Maybe decodesTo) RootMutation
 deleteDataset requiredArgs object =
     Object.selectionField "deleteDataset" [ Argument.required "name" requiredArgs.name Encode.string, Argument.required "owner" requiredArgs.owner Encode.string ] object (identity >> Decode.nullable)
@@ -48,6 +54,21 @@ deleteDataset requiredArgs object =
 deleteViewer : SelectionSet decodesTo Api.Object.User -> Field (Maybe decodesTo) RootMutation
 deleteViewer object =
     Object.selectionField "deleteViewer" [] object (identity >> Decode.nullable)
+
+
+type alias ExportDatasetRequiredArguments =
+    { name : String, owner : String }
+
+
+{-|
+
+  - name - The unique name of the dataset.
+  - owner - The login field of a user or organization.
+
+-}
+exportDataset : ExportDatasetRequiredArguments -> SelectionSet decodesTo Api.Object.DatasetExportPayload -> Field (Maybe decodesTo) RootMutation
+exportDataset requiredArgs object =
+    Object.selectionField "exportDataset" [ Argument.required "name" requiredArgs.name Encode.string, Argument.required "owner" requiredArgs.owner Encode.string ] object (identity >> Decode.nullable)
 
 
 type alias LoginRequiredArguments =
@@ -72,9 +93,32 @@ type alias UpdateDatasetRequiredArguments =
     { dataset : Api.InputObject.UpdateDatasetInput, name : String, owner : String }
 
 
+{-|
+
+  - name - The unique name of the dataset.
+  - owner - The login field of a user or organization.
+
+-}
 updateDataset : UpdateDatasetRequiredArguments -> SelectionSet decodesTo Api.Object.Dataset -> Field (Maybe decodesTo) RootMutation
 updateDataset requiredArgs object =
     Object.selectionField "updateDataset" [ Argument.required "dataset" requiredArgs.dataset Api.InputObject.encodeUpdateDatasetInput, Argument.required "name" requiredArgs.name Encode.string, Argument.required "owner" requiredArgs.owner Encode.string ] object (identity >> Decode.nullable)
+
+
+type alias UpdateLabelRequiredArguments =
+    { datapointId : Api.Scalar.Id, label : Api.InputObject.LabelInput, name : String, owner : String }
+
+
+{-|
+
+  - datapointId - The unique identifier of the datapoint to label.
+  - label - The label to add to the dataset.
+  - name - The unique name of the dataset.
+  - owner - The login field of a user or organization.
+
+-}
+updateLabel : UpdateLabelRequiredArguments -> SelectionSet decodesTo Api.Union.Label -> Field (Maybe decodesTo) RootMutation
+updateLabel requiredArgs object =
+    Object.selectionField "updateLabel" [ Argument.required "datapointId" requiredArgs.datapointId (\(Api.Scalar.Id raw) -> Encode.string raw), Argument.required "label" requiredArgs.label Api.InputObject.encodeLabelInput, Argument.required "name" requiredArgs.name Encode.string, Argument.required "owner" requiredArgs.owner Encode.string ] object (identity >> Decode.nullable)
 
 
 type alias UpdateViewerRequiredArguments =
@@ -84,3 +128,19 @@ type alias UpdateViewerRequiredArguments =
 updateViewer : UpdateViewerRequiredArguments -> SelectionSet decodesTo Api.Object.User -> Field (Maybe decodesTo) RootMutation
 updateViewer requiredArgs object =
     Object.selectionField "updateViewer" [ Argument.required "user" requiredArgs.user Api.InputObject.encodeUpdateUserInput ] object (identity >> Decode.nullable)
+
+
+type alias UploadDatapointsRequiredArguments =
+    { datapoints : List Api.InputObject.DatapointInput, name : String, owner : String }
+
+
+{-|
+
+  - datapoints - The list of datapoints to upload to the dataset.
+  - name - The unique name of the dataset.
+  - owner - The login field of a user or organization.
+
+-}
+uploadDatapoints : UploadDatapointsRequiredArguments -> SelectionSet decodesTo Api.Interface.Datapoint -> Field (Maybe (List decodesTo)) RootMutation
+uploadDatapoints requiredArgs object =
+    Object.selectionField "uploadDatapoints" [ Argument.required "datapoints" requiredArgs.datapoints (Api.InputObject.encodeDatapointInput |> Encode.list), Argument.required "name" requiredArgs.name Encode.string, Argument.required "owner" requiredArgs.owner Encode.string ] object (identity >> Decode.list >> Decode.nullable)

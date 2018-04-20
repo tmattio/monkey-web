@@ -9,8 +9,28 @@ type DataType
     = DataType
 
 
+type DatapointConnection
+    = DatapointConnection
+
+
+type DatapointEdge
+    = DatapointEdge
+
+
 type Dataset
     = Dataset
+
+
+type DatasetConnection
+    = DatasetConnection
+
+
+type DatasetEdge
+    = DatasetEdge
+
+
+type DatasetExportPayload
+    = DatasetExportPayload
 
 
 type Image
@@ -39,6 +59,10 @@ type LabelType
 
 type Organization
     = Organization
+
+
+type PageInfo
+    = PageInfo
 
 
 type Session

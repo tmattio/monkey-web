@@ -5,10 +5,6 @@
 module Api.Union exposing (..)
 
 
-type Datapoint
-    = Datapoint
-
-
 type Label
     = Label
 

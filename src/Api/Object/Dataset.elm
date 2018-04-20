@@ -32,9 +32,23 @@ dataType object =
     Object.selectionField "dataType" [] object identity
 
 
-datapoints : SelectionSet decodesTo Api.Union.Datapoint -> Field (List decodesTo) Api.Object.Dataset
-datapoints object =
-    Object.selectionField "datapoints" [] object (identity >> Decode.list)
+type alias DatapointsOptionalArguments =
+    { after : OptionalArgument String, before : OptionalArgument String, first : OptionalArgument Int, last : OptionalArgument Int }
+
+
+{-| Get the datapoints of a dataset.
+-}
+datapoints : (DatapointsOptionalArguments -> DatapointsOptionalArguments) -> SelectionSet decodesTo Api.Object.DatapointConnection -> Field (Maybe decodesTo) Api.Object.Dataset
+datapoints fillInOptionals object =
+    let
+        filledInOptionals =
+            fillInOptionals { after = Absent, before = Absent, first = Absent, last = Absent }
+
+        optionalArgs =
+            [ Argument.optional "after" filledInOptionals.after Encode.string, Argument.optional "before" filledInOptionals.before Encode.string, Argument.optional "first" filledInOptionals.first Encode.int, Argument.optional "last" filledInOptionals.last Encode.int ]
+                |> List.filterMap identity
+    in
+    Object.selectionField "datapoints" optionalArgs object (identity >> Decode.nullable)
 
 
 {-| The description of the dataset.
@@ -70,11 +84,6 @@ isPrivate =
 labelDefinition : SelectionSet decodesTo Api.Union.LabelDefinition -> Field decodesTo Api.Object.Dataset
 labelDefinition object =
     Object.selectionField "labelDefinition" [] object identity
-
-
-labels : SelectionSet decodesTo Api.Union.Label -> Field (List decodesTo) Api.Object.Dataset
-labels object =
-    Object.selectionField "labels" [] object (identity >> Decode.list)
 
 
 {-| The license of the repository.

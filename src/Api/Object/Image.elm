@@ -30,24 +30,24 @@ caption =
     Object.fieldDecoder "caption" [] (Decode.string |> Decode.nullable)
 
 
-compressionFormat : Field (Maybe String) Api.Object.Image
+compressionFormat : Field String Api.Object.Image
 compressionFormat =
-    Object.fieldDecoder "compressionFormat" [] (Decode.string |> Decode.nullable)
+    Object.fieldDecoder "compressionFormat" [] Decode.string
 
 
-depth : Field (Maybe Int) Api.Object.Image
+depth : Field Int Api.Object.Image
 depth =
-    Object.fieldDecoder "depth" [] (Decode.int |> Decode.nullable)
+    Object.fieldDecoder "depth" [] Decode.int
 
 
-filesize : Field (Maybe Int) Api.Object.Image
+filesize : Field Int Api.Object.Image
 filesize =
-    Object.fieldDecoder "filesize" [] (Decode.int |> Decode.nullable)
+    Object.fieldDecoder "filesize" [] Decode.int
 
 
-height : Field (Maybe Int) Api.Object.Image
+height : Field Int Api.Object.Image
 height =
-    Object.fieldDecoder "height" [] (Decode.int |> Decode.nullable)
+    Object.fieldDecoder "height" [] Decode.int
 
 
 id : Field Api.Scalar.Id Api.Object.Image
@@ -55,11 +55,16 @@ id =
     Object.fieldDecoder "id" [] (Decode.oneOf [ Decode.string, Decode.float |> Decode.map toString, Decode.int |> Decode.map toString, Decode.bool |> Decode.map toString ] |> Decode.map Api.Scalar.Id)
 
 
-storagePath : Field (Maybe String) Api.Object.Image
+labels : SelectionSet decodesTo Api.Union.Label -> Field (List decodesTo) Api.Object.Image
+labels object =
+    Object.selectionField "labels" [] object (identity >> Decode.list)
+
+
+storagePath : Field String Api.Object.Image
 storagePath =
-    Object.fieldDecoder "storagePath" [] (Decode.string |> Decode.nullable)
+    Object.fieldDecoder "storagePath" [] Decode.string
 
 
-width : Field (Maybe Int) Api.Object.Image
+width : Field Int Api.Object.Image
 width =
-    Object.fieldDecoder "width" [] (Decode.int |> Decode.nullable)
+    Object.fieldDecoder "width" [] Decode.int

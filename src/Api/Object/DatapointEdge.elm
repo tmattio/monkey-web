@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/graphqelm
 
 
-module Api.Object.Text exposing (..)
+module Api.Object.DatapointEdge exposing (..)
 
 import Api.InputObject
 import Api.Interface
@@ -20,26 +20,20 @@ import Json.Decode as Decode
 
 {-| Select fields to build up a SelectionSet for this object.
 -}
-selection : (a -> constructor) -> SelectionSet (a -> constructor) Api.Object.Text
+selection : (a -> constructor) -> SelectionSet (a -> constructor) Api.Object.DatapointEdge
 selection constructor =
     Object.selection constructor
 
 
-body : Field String Api.Object.Text
-body =
-    Object.fieldDecoder "body" [] Decode.string
+{-| A cursor for use in pagination
+-}
+cursor : Field String Api.Object.DatapointEdge
+cursor =
+    Object.fieldDecoder "cursor" [] Decode.string
 
 
-id : Field Api.Scalar.Id Api.Object.Text
-id =
-    Object.fieldDecoder "id" [] (Decode.oneOf [ Decode.string, Decode.float |> Decode.map toString, Decode.int |> Decode.map toString, Decode.bool |> Decode.map toString ] |> Decode.map Api.Scalar.Id)
-
-
-labels : SelectionSet decodesTo Api.Union.Label -> Field (List decodesTo) Api.Object.Text
-labels object =
-    Object.selectionField "labels" [] object (identity >> Decode.list)
-
-
-length : Field Int Api.Object.Text
-length =
-    Object.fieldDecoder "length" [] Decode.int
+{-| The item at the end of the edge
+-}
+node : SelectionSet decodesTo Api.Interface.Datapoint -> Field (Maybe decodesTo) Api.Object.DatapointEdge
+node object =
+    Object.selectionField "node" [] object (identity >> Decode.nullable)

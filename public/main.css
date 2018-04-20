@@ -135,3 +135,11 @@ div:hover > .features-icons-icon i{font-size:5rem}
   max-width: 720px;
   margin: auto;
 }
+
+.carousel-item {
+  background-image: url("./images/frontpage-banner.jpeg");
+  background-color: rgb(0, 0, 0);
+  background-repeat: no-repeat;
+  background-size: 100%;
+  opacity: 0.95;
+}

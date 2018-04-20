@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/graphqelm
 
 
-module Api.Object.Text exposing (..)
+module Api.Object.DatasetConnection exposing (..)
 
 import Api.InputObject
 import Api.Interface
@@ -20,26 +20,16 @@ import Json.Decode as Decode
 
 {-| Select fields to build up a SelectionSet for this object.
 -}
-selection : (a -> constructor) -> SelectionSet (a -> constructor) Api.Object.Text
+selection : (a -> constructor) -> SelectionSet (a -> constructor) Api.Object.DatasetConnection
 selection constructor =
     Object.selection constructor
 
 
-body : Field String Api.Object.Text
-body =
-    Object.fieldDecoder "body" [] Decode.string
+edges : SelectionSet decodesTo Api.Object.DatasetEdge -> Field (Maybe (List (Maybe decodesTo))) Api.Object.DatasetConnection
+edges object =
+    Object.selectionField "edges" [] object (identity >> Decode.nullable >> Decode.list >> Decode.nullable)
 
 
-id : Field Api.Scalar.Id Api.Object.Text
-id =
-    Object.fieldDecoder "id" [] (Decode.oneOf [ Decode.string, Decode.float |> Decode.map toString, Decode.int |> Decode.map toString, Decode.bool |> Decode.map toString ] |> Decode.map Api.Scalar.Id)
-
-
-labels : SelectionSet decodesTo Api.Union.Label -> Field (List decodesTo) Api.Object.Text
-labels object =
-    Object.selectionField "labels" [] object (identity >> Decode.list)
-
-
-length : Field Int Api.Object.Text
-length =
-    Object.fieldDecoder "length" [] Decode.int
+pageInfo : SelectionSet decodesTo Api.Object.PageInfo -> Field decodesTo Api.Object.DatasetConnection
+pageInfo object =
+    Object.selectionField "pageInfo" [] object identity

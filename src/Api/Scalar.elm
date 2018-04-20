@@ -11,3 +11,7 @@ type DateTime
 
 type Id
     = Id String
+
+
+type Upload
+    = Upload String

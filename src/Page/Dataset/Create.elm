@@ -1,6 +1,9 @@
-module Page.Dataset.Create exposing (Model, Msg, init, update, view)
+module Page.Dataset.Create exposing (Model, Msg, init, update, view, subscriptions)
 
 import Api.InputObject
+import Api.Scalar
+import Api.Interface
+import Api.Interface.Datapoint
 import Api.Object
 import Api.Object.Dataset
 import Api.Object.DataType
@@ -25,6 +28,7 @@ import Task exposing (Task)
 import Request.Helpers exposing (WebData, makeQuery, makeMutation)
 import Data exposing (User, Session)
 import Views.Form as Form
+import Views.Upload as Upload exposing (view, init, Model, Msg)
 
 
 type alias Username =
@@ -38,8 +42,18 @@ type alias Dataset =
     }
 
 
-type alias Response =
+type alias Datapoint =
+    { id : Api.Scalar.Id
+    }
+
+
+type alias DatasetResponse =
     { dataset : Dataset
+    }
+
+
+type alias UploadResponse =
+    { datapoints : Maybe (List Datapoint)
     }
 
 
@@ -61,10 +75,16 @@ user =
         |> with (Api.Object.User.username)
 
 
-query : Mutation.CreateDatasetRequiredArguments -> SelectionSet Response RootMutation
-query datasetPayload =
-    Mutation.selection Response
+createDatasetMutation : Mutation.CreateDatasetRequiredArguments -> SelectionSet DatasetResponse RootMutation
+createDatasetMutation datasetPayload =
+    Mutation.selection DatasetResponse
         |> with (Mutation.createDataset datasetPayload dataset |> Field.nonNullOrFail)
+
+
+uploadMutation : Mutation.UploadDatapointsRequiredArguments -> SelectionSet UploadResponse RootMutation
+uploadMutation datapoints =
+    Mutation.selection UploadResponse
+        |> with (Mutation.uploadDatapoints datapoints datapointSelection)
 
 
 type alias DataType =
@@ -91,6 +111,12 @@ dataType =
         |> with (Api.Object.DataType.labelTypes labelType)
 
 
+datapointSelection : SelectionSet Datapoint Api.Interface.Datapoint
+datapointSelection =
+    Api.Interface.Datapoint.commonSelection Datapoint
+        |> with Api.Interface.Datapoint.id
+
+
 typeQuery : SelectionSet TypeResponse RootQuery
 typeQuery =
     Query.selection TypeResponse
@@ -109,6 +135,9 @@ type alias Model =
     , dataType : Maybe String
     , labelType : Maybe String
     , labelDefinition : List String
+    , createdDataset : WebData DatasetResponse
+    , uploadModel : Upload.Model
+    , uploading : Bool
     }
 
 
@@ -135,6 +164,9 @@ init session =
                     , dataType = Nothing
                     , labelType = Nothing
                     , labelDefinition = [ "test" ]
+                    , uploadModel = Upload.init
+                    , uploading = False
+                    , createdDataset = RemoteData.NotAsked
                     }
                 )
 
@@ -145,20 +177,34 @@ init session =
 
 view : Session -> Model -> Html Msg
 view session model =
-    div [ class "editor-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "px-3 py-3 pt-md-5 pb-md-4" ]
-                [ h1 [ class "display-4" ]
-                    [ text "Create a Dataset" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-10 offset-md-1 col-xs-12" ]
-                    [ Form.viewErrors model.errors
-                    , viewForm model
+    let
+        formView =
+            case model.uploading of
+                True ->
+                    div [ class "row" ]
+                        [ p [] [ text "Upload in progress..." ]
+                        ]
+
+                False ->
+                    div [ class "row" ]
+                        [ div [ class "col-md-10 offset-md-1 col-xs-12" ]
+                            [ Form.viewErrors model.errors
+                            , viewForm model
+                            ]
+                        ]
+    in
+        div [ class "editor-page" ]
+            [ div
+                [ class "editor-page" ]
+                [ div [ class "container page" ]
+                    [ div [ class "px-3 py-3 pt-md-5 pb-md-4" ]
+                        [ h1 [ class "display-4" ]
+                            [ text "Create a Dataset" ]
+                        ]
+                    , formView
                     ]
                 ]
             ]
-        ]
 
 
 viewForm : Model -> Html Msg
@@ -206,6 +252,8 @@ viewForm model =
                 , Form.select [ onInput SetDataType ] ([ option [] [ text "Select Data Type" ] ] ++ dataTypes)
                 , Form.select [ onInput SetLabelType ] ([ option [] [ text "Select Label Type" ] ] ++ labelTypes)
                 , labelDefinitionInput model.labelType
+                , Upload.view model.uploadModel |> Html.Styled.map UploadMsg
+                , br [] []
                 , button [ class "btn btn-lg pull-xs-right btn-primary" ]
                     [ text "Create Dataset" ]
                 ]
@@ -222,7 +270,9 @@ type Msg
     | SetDescription String
     | SetDataType String
     | SetLabelType String
-    | CreateCompleted (WebData Response)
+    | CreateCompleted (WebData DatasetResponse)
+    | UploadCompleted (WebData UploadResponse)
+    | UploadMsg Upload.Msg
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
@@ -236,7 +286,7 @@ update session msg model =
                             modelToMutationArguments model
                     in
                         ( { model | errors = [] }
-                        , query inputObject
+                        , createDatasetMutation inputObject
                             |> makeMutation (Just session)
                             |> Graphqelm.Http.send (RemoteData.fromResult >> CreateCompleted)
                         )
@@ -256,11 +306,44 @@ update session msg model =
         SetLabelType labelType ->
             ( { model | labelType = labelTypeInModel model.dataTypes labelType }, Cmd.none )
 
+        UploadCompleted (RemoteData.Success _) ->
+            case model.createdDataset of
+                RemoteData.Success response ->
+                    ( model, Route.PreviewDataset response.dataset.user.username response.dataset.slug |> Route.modifyUrl )
+
+                _ ->
+                    ( { model | errors = model.errors ++ [ ( Form, "Internal error, the dataset has not been created" ) ] }, Cmd.none )
+
+        UploadCompleted _ ->
+            ( { model | errors = model.errors ++ [ ( Form, "Server error while attempting to publish dataset" ) ] }, Cmd.none )
+
         CreateCompleted (RemoteData.Success response) ->
-            ( model, Route.PreviewDataset response.dataset.user.username response.dataset.slug |> Route.modifyUrl )
+            let
+                inputObject =
+                    filesToMutation response.dataset model.uploadModel.files
+            in
+                ( { model | errors = [], createdDataset = RemoteData.Success response }
+                , uploadMutation inputObject
+                    |> makeMutation (Just session)
+                    |> Graphqelm.Http.send (RemoteData.fromResult >> UploadCompleted)
+                )
 
         CreateCompleted _ ->
             ( { model | errors = model.errors ++ [ ( Form, "Server error while attempting to publish dataset" ) ] }, Cmd.none )
+
+        UploadMsg subMsg ->
+            let
+                ( newModel, subCmd ) =
+                    Upload.update subMsg model.uploadModel
+            in
+                ( { model | uploadModel = newModel }, Cmd.map UploadMsg subCmd )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Upload.subscriptions model.uploadModel |> Sub.map UploadMsg
+        ]
 
 
 
@@ -392,3 +475,33 @@ findNameInList namedList pattern =
 
             Nothing ->
                 Nothing
+
+
+filesToMutation : Dataset -> List { a | content : String } -> Mutation.UploadDatapointsRequiredArguments
+filesToMutation dataset files =
+    let
+        datapoints =
+            files
+                |> List.map fileToDatapointInput
+    in
+        { name = dataset.slug
+        , owner = dataset.user.username
+        , datapoints = datapoints
+        }
+
+
+fileToDatapointInput : { a | content : String } -> Api.InputObject.DatapointInput
+fileToDatapointInput file =
+    Api.InputObject.buildDatapointInput
+        (\optionals ->
+            { optionals
+                | uploadImage =
+                    Present
+                        (Api.InputObject.buildUploadImageInput
+                            { compressionFormat = "png"
+                            , content = file.content
+                            }
+                            identity
+                        )
+            }
+        )
