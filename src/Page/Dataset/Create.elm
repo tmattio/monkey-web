@@ -28,6 +28,7 @@ import Task exposing (Task)
 import Request.Helpers exposing (WebData, makeQuery, makeMutation)
 import Data exposing (User, Session)
 import Views.Form as Form
+import Views.Title exposing (viewTitle)
 import Views.Upload as Upload exposing (view, init, Model, Msg)
 
 
@@ -194,16 +195,8 @@ view session model =
                         ]
     in
         div [ class "editor-page" ]
-            [ div
-                [ class "editor-page" ]
-                [ div [ class "container page" ]
-                    [ div [ class "px-3 py-3 pt-md-5 pb-md-4" ]
-                        [ h1 [ class "display-4" ]
-                            [ text "Create a Dataset" ]
-                        ]
-                    , formView
-                    ]
-                ]
+            [ viewTitle "Create a Dataset"
+            , div [ class "container" ] [ formView ]
             ]
 
 

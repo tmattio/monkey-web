@@ -5,13 +5,13 @@ import Api.InputObject
 import Api.Object.User as User
 import Api.Query as Query
 import Api.Mutation as Mutation
-import Request.Helpers exposing (WebData, makeQuery, makeMutation)
+import Request.Helpers exposing (WebData, makeQuery, makeMutation, parseGraphQLError)
 import Graphqelm.Http
 import Graphqelm.OptionalArgument exposing (OptionalArgument(Present))
 import Graphqelm.Operation exposing (RootMutation, RootQuery)
 import Graphqelm.SelectionSet as SelectionSet exposing (SelectionSet, hardcoded, with)
 import Graphqelm.Field as Field
-import Html.Styled exposing (Html, button, div, fieldset, h1, input, text, textarea)
+import Html.Styled exposing (Html, button, div, fieldset, h1, input, text, textarea, main_)
 import Html.Styled.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
 import Html.Styled.Events exposing (onInput, onSubmit, onClick)
 import Task exposing (Task)
@@ -22,6 +22,7 @@ import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
+import Views.Title exposing (viewTitle)
 import Ports
 
 
@@ -128,12 +129,12 @@ decodeResponse response =
 
 view : Session -> Model -> Html Msg
 view session model =
-    div [ class "settings-page" ]
-        [ div [ class "container page" ]
+    main_ [ attribute "role" "main" ]
+        [ viewTitle "Your Settings"
+        , div [ class "container" ]
             [ div [ class "row" ]
                 [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                    [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
-                    , Form.viewErrors model.errors
+                    [ Form.viewErrors model.errors
                     , viewForm model
                     ]
                 ]
@@ -246,18 +247,8 @@ update session msg model =
 
         SaveCompleted (RemoteData.Failure error) ->
             let
-                errorMessages =
-                    case error of
-                        -- Http.BadStatus response ->
-                        --     response.body
-                        --         |> decodeString (field "errors" errorsDecoder)
-                        --         |> Result.withDefault []
-                        _ ->
-                            [ "unable to save changes" ]
-
                 errors =
-                    errorMessages
-                        |> List.map (\errorMessage -> ( Form, errorMessage ))
+                    [ ( Form, parseGraphQLError error ) ]
             in
                 ( ( { model | errors = errors }, Cmd.none ), NoOp )
 

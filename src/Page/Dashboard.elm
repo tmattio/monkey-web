@@ -15,6 +15,8 @@ import RemoteData exposing (RemoteData)
 import Data exposing (Session)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
+import Views.Error exposing (viewWithError)
+import Views.Title exposing (viewTitle)
 import Route exposing (Route)
 
 
@@ -36,6 +38,7 @@ type alias Dataset =
     , description : Maybe String
     , slug : String
     , thumbnailUrl : Maybe String
+    , owner : String
     }
 
 
@@ -46,6 +49,13 @@ dataset =
         |> with Dataset.description
         |> with Dataset.slug
         |> with Dataset.thumbnailUrl
+        |> with (Dataset.owner owner)
+
+
+owner : SelectionSet String Api.Object.User
+owner =
+    User.selection identity
+        |> with (User.username)
 
 
 viewer : SelectionSet ViewerResponse Api.Object.User
@@ -92,25 +102,16 @@ init session =
 view : Maybe Session -> Model -> Html Msg
 view session model =
     let
-        datasetView =
-            case model.dataset of
-                RemoteData.Success r ->
-                    div [ class "row" ] (List.map viewDataset r.viewer.datasets)
+        successView r =
+            div [ class "row" ] (List.map viewDataset r.viewer.datasets)
 
-                _ ->
-                    div [ class "home-page" ]
-                        [ text "An error occured while fetching the dataset"
-                        ]
+        datasetView =
+            viewWithError model.dataset successView
     in
         main_ [ attribute "role" "main" ]
-            [ div [ class "px-3 py-3 pt-md-5 pb-md-4" ]
-                [ h1 [ class "display-4" ]
-                    [ text "My Datasets" ]
-                ]
-            , div [ class "album py-5" ]
-                [ div [ class "container" ]
-                    [ datasetView
-                    ]
+            [ viewTitle "My Datasets"
+            , div [ class "container" ]
+                [ datasetView
                 ]
             ]
 
@@ -132,7 +133,7 @@ viewDataset dataset =
                     , div [ class "d-flex justify-content-between align-items-center" ]
                         [ div [ class "btn-group" ]
                             [ button [ type_ "button", class "btn btn-sm btn-outline-secondary" ]
-                                [ a [ Route.href (Route.PreviewDataset "tmattio" dataset.slug) ] [ text "View" ] ]
+                                [ a [ Route.href (Route.PreviewDataset dataset.owner dataset.slug) ] [ text "View" ] ]
                             , button [ type_ "button", class "btn btn-sm btn-outline-secondary" ]
                                 [ text "Star" ]
                             ]

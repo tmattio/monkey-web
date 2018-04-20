@@ -7,7 +7,7 @@ import Html.Styled.Events exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Validate exposing (Validator, ifBlank, validate)
 import RemoteData exposing (RemoteData)
-import Request.Helpers exposing (WebData, makeMutation)
+import Request.Helpers exposing (WebData, makeMutation, parseGraphQLError)
 import Request.Auth exposing (SessionResponse, login)
 import Data exposing (Session, User)
 import Views.Form as Form
@@ -127,29 +127,11 @@ update session msg model =
             )
 
         LoginCompleted (RemoteData.Failure error) ->
-            let
-                errorMessages =
-                    case error of
-                        Graphqelm.Http.GraphqlError possiblyParsedData errors ->
-                            "GraphQL errors: \n"
-                                ++ toString errors
-                                ++ "\n\n"
-                                ++ (case possiblyParsedData of
-                                        Graphqelm.Http.GraphqlError.UnparsedData unparsed ->
-                                            "Unable to parse data, got: " ++ toString unparsed
-
-                                        Graphqelm.Http.GraphqlError.ParsedData parsedData ->
-                                            "Parsed error data, so I can extract the name from the structured data..."
-                                   )
-
-                        Graphqelm.Http.HttpError httpError ->
-                            "Http error " ++ toString httpError
-            in
-                ( ( { model | errors = [ ( Form, errorMessages ) ] }
-                  , Cmd.none
-                  )
-                , NoOp
-                )
+            ( ( { model | errors = [ ( Form, parseGraphQLError error ) ] }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         LoginCompleted (RemoteData.Success response) ->
             ( ( model, Cmd.batch [ Data.storeSession response.session, Route.modifyUrl Route.Home ] ), SetSession response.session )

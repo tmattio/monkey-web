@@ -1,6 +1,7 @@
-module Request.Helpers exposing (apiUrl, WebData, makeQuery, makeMutation)
+module Request.Helpers exposing (apiUrl, WebData, makeQuery, makeMutation, parseGraphQLError)
 
 import Graphqelm.Http
+import Graphqelm.Http.GraphqlError
 import Graphqelm.Operation exposing (RootQuery, RootMutation)
 import Graphqelm.SelectionSet exposing (SelectionSet)
 import RemoteData exposing (RemoteData)
@@ -39,3 +40,15 @@ withAuthorization session request =
 
 type alias WebData a =
     RemoteData (Graphqelm.Http.Error a) a
+
+
+parseGraphQLError : Graphqelm.Http.Error parsedData -> String
+parseGraphQLError error =
+    case error of
+        Graphqelm.Http.GraphqlError possiblyParsedData errors ->
+            errors
+                |> List.map (\error -> error.message)
+                |> String.concat
+
+        Graphqelm.Http.HttpError httpError ->
+            "Http error " ++ toString httpError

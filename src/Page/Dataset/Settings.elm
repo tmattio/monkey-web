@@ -22,6 +22,7 @@ import Task exposing (Task)
 import Request.Helpers exposing (WebData, makeQuery, makeMutation)
 import Data exposing (User, Session)
 import Views.Form as Form
+import Views.Title exposing (viewTitle)
 
 
 type alias DatasetResponse =
@@ -101,7 +102,7 @@ decodeResponse datasetName owner response =
             { errors = []
             , datasetName = datasetName
             , datasetOwner = owner
-            , name = r.dataset.slug
+            , name = r.dataset.name
             , description = Maybe.withDefault "" r.dataset.description
             }
 
@@ -120,13 +121,10 @@ decodeResponse datasetName owner response =
 
 view : Session -> Model -> Html Msg
 view session model =
-    div [ class "editor-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "px-3 py-3 pt-md-5 pb-md-4" ]
-                [ h1 [ class "display-4" ]
-                    [ text "Dataset Settings" ]
-                ]
-            , div [ class "row" ]
+    div []
+        [ viewTitle (model.name ++ "'s Settings")
+        , div [ class "container" ]
+            [ div [ class "row" ]
                 [ div [ class "col-md-10 offset-md-1 col-xs-12" ]
                     [ Form.viewErrors model.errors
                     , viewForm model

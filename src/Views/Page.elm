@@ -65,7 +65,7 @@ layout session isLoading layout page content =
                       , content |> toUnstyled
                       , viewFooter |> toUnstyled
                       ]
-                    , Grid.container
+                    , Grid.containerFluid
                     )
 
                 FullPage ->

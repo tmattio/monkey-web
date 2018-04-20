@@ -15,6 +15,8 @@ import RemoteData exposing (RemoteData)
 import Data exposing (Session)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
+import Views.Error exposing (viewWithError)
+import Views.Title exposing (viewTitle)
 
 
 -- DATA --
@@ -81,36 +83,23 @@ init session =
 view : Maybe Session -> Model -> Html Msg
 view session model =
     let
-        datasetView =
-            case model.dataset of
-                RemoteData.Success r ->
-                    div [ class "row" ]
-                        [ datasetCard r.dataset
-                        , datasetCard r.dataset
-                        , datasetCard r.dataset
-                        , datasetCard r.dataset
-                        , datasetCard r.dataset
-                        , datasetCard r.dataset
-                        ]
+        successView r =
+            div [ class "row" ]
+                [ datasetCard r.dataset
+                , datasetCard r.dataset
+                , datasetCard r.dataset
+                , datasetCard r.dataset
+                , datasetCard r.dataset
+                , datasetCard r.dataset
+                ]
 
-                _ ->
-                    div [ class "home-page" ]
-                        [ text "An error occured while fetching the dataset"
-                        ]
+        datasetView =
+            viewWithError model.dataset successView
     in
         main_ [ attribute "role" "main" ]
-            [ section [ class "jumbotron text-center" ]
-                [ div [ class "container" ]
-                    [ h1 [ class "jumbotron-heading" ]
-                        [ text "Explore Dataset" ]
-                    , p [ class "lead text-muted" ]
-                        [ text "Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely." ]
-                    ]
-                ]
-            , div [ class "album py-5" ]
-                [ div [ class "container" ]
-                    [ datasetView
-                    ]
+            [ viewTitle "Explore Dataset"
+            , div [ class "container" ]
+                [ datasetView
                 ]
             ]
 

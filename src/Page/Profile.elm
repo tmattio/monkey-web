@@ -15,6 +15,8 @@ import Request.Helpers exposing (WebData, makeQuery)
 import Data exposing (Session)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
+import Views.Error exposing (viewWithError)
+import Views.Title exposing (viewTitle)
 
 
 -- DATA --
@@ -78,18 +80,17 @@ init session username =
 view : Maybe Session -> Model -> Html Msg
 view session model =
     let
-        userView =
-            case model.user of
-                RemoteData.Success r ->
-                    viewUser r.user
+        successView r =
+            viewUser r.user
 
-                _ ->
-                    div [ class "home-page" ]
-                        [ text "An error occured while fetching this user!"
-                        ]
+        profileView =
+            viewWithError model.user successView
     in
         main_ [ attribute "role" "main" ]
-            [ userView
+            [ viewTitle "Profile"
+            , div [ class "container" ]
+                [ profileView
+                ]
             ]
 
 
