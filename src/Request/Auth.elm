@@ -7,7 +7,7 @@ import Api.Object
 import Api.Object.User
 import Api.Object.Session
 import Api.Mutation as Mutation
-import Data exposing (Session, User)
+import Data.Auth exposing (Session, User)
 
 
 type alias SessionResponse =

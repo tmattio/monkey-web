@@ -1,7 +1,7 @@
 module Page.Search exposing (view)
 
 import Html.Styled exposing (..)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 
 
 view : Maybe Session -> Html msg

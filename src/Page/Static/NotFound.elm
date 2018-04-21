@@ -2,7 +2,7 @@ module Page.Static.NotFound exposing (view)
 
 import Html.Styled exposing (Html, main_, h1, div, img, text)
 import Html.Styled.Attributes exposing (class, tabindex, id, src, alt)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 
 
 -- VIEW --

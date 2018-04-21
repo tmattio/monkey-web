@@ -86,6 +86,13 @@ labelDefinition object =
     Object.selectionField "labelDefinition" [] object identity
 
 
+{-| Returns the label type for this repository.
+-}
+labelType : SelectionSet decodesTo Api.Object.LabelType -> Field decodesTo Api.Object.Dataset
+labelType object =
+    Object.selectionField "labelType" [] object identity
+
+
 {-| The license of the repository.
 -}
 license : Field (Maybe String) Api.Object.Dataset

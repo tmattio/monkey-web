@@ -2,7 +2,7 @@ module Page.Static.Pricing exposing (view)
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (alt, class, id, src, tabindex, type_, attribute)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 import Route exposing (Route)
 
 

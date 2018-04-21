@@ -1,4 +1,4 @@
-module Views.Page exposing (ActivePage(..), Layout(..), layout)
+module Views.Page exposing (ActivePage(..), Layout(..), layout, init, update, Model, Msg)
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -7,7 +7,7 @@ import Css.Foreign exposing (global)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Route exposing (Route)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 import Views.Form as Form
 import Stylesheets exposing (globalWithNavbar, globalFull)
 
@@ -115,7 +115,7 @@ viewSignIn session page =
     in
         case session of
             Nothing ->
-                a [ class "btn btn-outline-success", Route.href Route.Login ] [ text "Sign in" ]
+                a [ class "btn btn-outline-success ml-3", Route.href Route.Login ] [ text "Sign in" ]
 
             Just s ->
                 ul [ class "navbar-nav" ] <|
@@ -293,3 +293,25 @@ isActive page route =
 
         _ ->
             False
+
+
+type Msg
+    = SearchDataset
+
+
+type alias Model =
+    { searchTerm : String
+    }
+
+
+init : Model
+init =
+    { searchTerm = ""
+    }
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SearchDataset ->
+            ( model, Cmd.none )

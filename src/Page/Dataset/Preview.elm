@@ -1,63 +1,46 @@
 module Page.Dataset.Preview exposing (view, update, Model, Msg, init)
 
 import Api.Object
-import Api.Object.User as User
-import Api.Object.Dataset as Dataset
-import Api.Query as Query
+import Api.Object.DatasetExportPayload
+import Api.Mutation as Mutation
 import Graphqelm.Http
-import Graphqelm.Operation exposing (RootQuery)
-import Graphqelm.SelectionSet as SelectionSet exposing (SelectionSet, hardcoded, with)
+import Graphqelm.Operation exposing (RootQuery, RootMutation)
+import Graphqelm.SelectionSet as SelectionSet exposing (SelectionSet, hardcoded, with, map)
 import Graphqelm.Field as Field
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
+import Html.Styled.Events exposing (onClick)
 import Task exposing (Task)
 import RemoteData exposing (RemoteData)
-import Request.Helpers exposing (WebData, makeQuery, parseGraphQLError)
-import Data exposing (Session)
+import Request.Helpers exposing (WebData, makeQuery, makeMutation, parseGraphQLError)
+import Request.Dataset exposing (getDataset)
+import Data.Auth exposing (Session)
+import Data.Dataset exposing (Dataset)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
 import Views.Error exposing (viewWithError)
 import Views.Title exposing (viewTitle)
+import Views.PreviewDataset exposing (previewDataset)
 import Route exposing (Route)
 
 
 -- DATA --
 
 
-type alias DatasetResponse =
-    { dataset : Dataset
-    }
+type alias UrlResponse =
+    String
 
 
-type alias Dataset =
-    { name : String
-    , description : Maybe String
-    , slug : String
-    , thumbnailUrl : Maybe String
-    , owner : String
-    }
+exportQuery : Mutation.ExportDatasetRequiredArguments -> SelectionSet UrlResponse RootMutation
+exportQuery datasetPayload =
+    Mutation.selection identity
+        |> with (Mutation.exportDataset datasetPayload url |> Field.nonNullOrFail)
 
 
-dataset : SelectionSet Dataset Api.Object.Dataset
-dataset =
-    Dataset.selection Dataset
-        |> with Dataset.name
-        |> with Dataset.description
-        |> with Dataset.slug
-        |> with Dataset.thumbnailUrl
-        |> with (Dataset.owner owner)
-
-
-owner : SelectionSet String Api.Object.User
-owner =
-    User.selection identity
-        |> with (User.username)
-
-
-query : Query.DatasetRequiredArguments -> SelectionSet DatasetResponse RootQuery
-query datasetPayload =
-    Query.selection DatasetResponse
-        |> with (Query.dataset datasetPayload dataset |> Field.nonNullOrFail)
+url : SelectionSet UrlResponse Api.Object.DatasetExportPayload
+url =
+    Api.Object.DatasetExportPayload.selection identity
+        |> with (Api.Object.DatasetExportPayload.exportUrl |> Field.nonNullOrFail)
 
 
 
@@ -66,7 +49,9 @@ query datasetPayload =
 
 type alias Model =
     { owner : String
-    , dataset : WebData DatasetResponse
+    , datasetName : String
+    , dataset : WebData Dataset
+    , exportedDataset : WebData UrlResponse
     }
 
 
@@ -75,7 +60,7 @@ init session username datasetName =
     let
         loadDataset =
             { name = datasetName, owner = username }
-                |> query
+                |> getDataset
                 |> makeQuery session
                 |> Graphqelm.Http.toTask
                 |> RemoteData.fromTask
@@ -89,6 +74,8 @@ init session username datasetName =
                 (\dataset ->
                     { dataset = dataset
                     , owner = username
+                    , datasetName = datasetName
+                    , exportedDataset = RemoteData.NotAsked
                     }
                 )
 
@@ -100,20 +87,18 @@ init session username datasetName =
 view : Maybe Session -> Model -> Html Msg
 view session model =
     let
-        successView r =
+        successView dataset =
             div []
                 [ a
-                    [ Route.href (Route.SettingsDataset model.owner r.dataset.slug), class "btn btn-lg btn-success" ]
+                    [ Route.href (Route.SettingsDataset model.owner dataset.slug), class "btn btn-lg btn-success" ]
                     [ text "Settings" ]
                 , a
-                    [ Route.href (Route.Label model.owner r.dataset.slug), class "btn btn-lg btn-primary" ]
+                    [ Route.href (Route.Label model.owner dataset.slug), class "btn btn-lg btn-primary" ]
                     [ text "Label" ]
-                , a
-                    [ class "btn btn-lg btn-info" ]
-                    [ text "Export" ]
+                , viewExportDataset model
                 , div
                     [ class "row" ]
-                    [ datasetCard r.dataset
+                    [ previewDataset dataset
                     ]
                 ]
 
@@ -126,6 +111,30 @@ view session model =
                 [ datasetView
                 ]
             ]
+
+
+viewExportDataset : Model -> Html Msg
+viewExportDataset model =
+    case model.exportedDataset of
+        RemoteData.Success url ->
+            div []
+                [ text "Your Dataset is ready!"
+                , a
+                    [ href url
+                    , target "_blank"
+                    ]
+                    [ text "Click Here" ]
+                ]
+
+        RemoteData.NotAsked ->
+            div [ class "btn btn-lg btn-info", onClick ExportDataset ]
+                [ text "Export" ]
+
+        RemoteData.Loading ->
+            div [] [ text "Export in progres..." ]
+
+        RemoteData.Failure _ ->
+            div [] [ text "Something went wrong :/" ]
 
 
 datasetCard : Dataset -> Html Msg
@@ -168,11 +177,30 @@ datasetCard dataset =
 
 
 type Msg
-    = Todo
+    = ExportDataset
+    | ExportCompleted (WebData UrlResponse)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Maybe Session -> Msg -> Model -> ( Model, Cmd Msg )
+update session msg model =
     case msg of
-        Todo ->
-            ( model, Cmd.none )
+        ExportDataset ->
+            let
+                inputObject =
+                    modelToExportInputObject model
+            in
+                ( model
+                , exportQuery inputObject
+                    |> makeMutation session
+                    |> Graphqelm.Http.send (RemoteData.fromResult >> ExportCompleted)
+                )
+
+        ExportCompleted dataset ->
+            ( { model | exportedDataset = dataset }, Cmd.none )
+
+
+modelToExportInputObject : Model -> Mutation.ExportDatasetRequiredArguments
+modelToExportInputObject model =
+    { owner = model.owner
+    , name = model.datasetName
+    }

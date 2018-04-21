@@ -6,7 +6,7 @@ for example a Page Not Found error.
 
 import Html.Styled exposing (Html, main_, h1, div, img, text, p)
 import Html.Styled.Attributes exposing (class, tabindex, id, alt)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 import Views.Page as Page exposing (ActivePage)
 
 

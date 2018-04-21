@@ -6,7 +6,7 @@ import Navigation exposing (Location)
 import Json.Decode as Decode exposing (Value)
 import Route exposing (..)
 import Task exposing (Task)
-import Data exposing (Session, sessionDecoder)
+import Data.Auth exposing (Session, sessionDecoder)
 import Page.Static.NotFound as NotFound
 import Page.Static.LandingPage as LandingPage
 import Page.Static.Features as Features
@@ -32,7 +32,8 @@ import Ports
 
 
 type alias Model =
-    { pageState : PageState
+    { globalPageModel : Page.Model
+    , pageState : PageState
     , session : Maybe Session
     }
 
@@ -88,6 +89,7 @@ type Msg
     | LabelMsg Label.Msg
     | ProfileMsg Profile.Msg
     | SetSession (Maybe Session)
+    | GlobalPageMsg Page.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -252,7 +254,7 @@ updatePage page msg model =
                 ( { model | pageState = Loaded (Error error) }, Cmd.none )
 
             ( PreviewDatasetMsg subMsg, PreviewDataset subModel ) ->
-                toPage PreviewDataset PreviewDatasetMsg (PreviewDataset.update) subMsg subModel
+                toPage PreviewDataset PreviewDatasetMsg (PreviewDataset.update model.session) subMsg subModel
 
             ( CreateDatasetLoaded (Ok subModel), _ ) ->
                 ( { model | pageState = Loaded (CreateDataset subModel) }, Cmd.none )
@@ -356,6 +358,13 @@ updatePage page msg model =
                 -- Disregard incoming messages when we're on the
                 -- NotFound page.
                 ( model, Cmd.none )
+
+            ( GlobalPageMsg subMsg, _ ) ->
+                let
+                    ( newModel, subCmd ) =
+                        Page.update subMsg model.globalPageModel
+                in
+                    ( { model | globalPageModel = newModel }, Cmd.map GlobalPageMsg subCmd )
 
             ( _, _ ) ->
                 -- Disregard incoming messages that arrived for the wrong page
@@ -542,6 +551,7 @@ init val location =
     setRoute (Route.fromLocation location)
         { pageState = Loaded initialPage
         , session = decodeUserFromJson val
+        , globalPageModel = Page.init
         }
 
 

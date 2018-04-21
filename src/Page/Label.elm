@@ -8,12 +8,11 @@ import Annotation.Viewer as Viewer exposing (Viewer)
 import Html.Attributes exposing (id, attribute, style)
 import Html exposing (Attribute)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
 import Pointer
 import Task exposing (Task)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Svg exposing (..)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 
 
 type alias Model =

@@ -12,7 +12,7 @@ import Html.Styled.Attributes exposing (..)
 import Task exposing (Task)
 import RemoteData exposing (RemoteData)
 import Request.Helpers exposing (WebData, makeQuery)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
 import Views.Error exposing (viewWithError)

@@ -17,7 +17,7 @@ import Html.Styled.Events exposing (onInput, onSubmit, onClick)
 import Task exposing (Task)
 import RemoteData exposing (RemoteData)
 import Route exposing (Route)
-import Data exposing (Session, User, storeSession)
+import Data.Auth exposing (Session, User, storeSession)
 import Page.Error exposing (PageLoadError, pageLoadError)
 import Views.Page as Page
 import Validate exposing (Validator, ifBlank, validate)

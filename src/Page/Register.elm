@@ -1,7 +1,6 @@
 module Page.Register exposing (ExternalMsg(..), view, Msg, Model, update, initialModel)
 
 import Graphqelm.Http
-import Graphqelm.Http.GraphqlError
 import Html.Styled exposing (..)
 import Html.Styled.Events exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -10,7 +9,7 @@ import RemoteData exposing (RemoteData)
 import Request.Helpers exposing (WebData, makeMutation, parseGraphQLError)
 import Request.Auth exposing (SessionResponse, register)
 import Views.Form as Form
-import Data exposing (Session)
+import Data.Auth exposing (Session, storeSession)
 import Route exposing (Route)
 import Stylesheets exposing (formSignin)
 
@@ -170,7 +169,7 @@ update session msg model =
             )
 
         RegisterCompleted (RemoteData.Success response) ->
-            ( ( model, Cmd.batch [ Data.storeSession response.session, Route.modifyUrl Route.Home ] ), SetSession response.session )
+            ( ( model, Cmd.batch [ storeSession response.session, Route.modifyUrl Route.Home ] ), SetSession response.session )
 
         RegisterCompleted _ ->
             ( ( model, Cmd.none ), NoOp )

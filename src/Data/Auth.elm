@@ -1,4 +1,12 @@
-module Data exposing (..)
+module Data.Auth
+    exposing
+        ( Session
+        , User
+        , sessionDecoder
+        , userDecoder
+        , userEncoder
+        , storeSession
+        )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)

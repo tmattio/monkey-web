@@ -9,7 +9,7 @@ import Validate exposing (Validator, ifBlank, validate)
 import RemoteData exposing (RemoteData)
 import Request.Helpers exposing (WebData, makeMutation, parseGraphQLError)
 import Request.Auth exposing (SessionResponse, login)
-import Data exposing (Session, User)
+import Data.Auth exposing (Session, User, storeSession)
 import Views.Form as Form
 import Route exposing (Route)
 import Stylesheets exposing (formSignin)
@@ -134,7 +134,7 @@ update session msg model =
             )
 
         LoginCompleted (RemoteData.Success response) ->
-            ( ( model, Cmd.batch [ Data.storeSession response.session, Route.modifyUrl Route.Home ] ), SetSession response.session )
+            ( ( model, Cmd.batch [ storeSession response.session, Route.modifyUrl Route.Home ] ), SetSession response.session )
 
         LoginCompleted _ ->
             ( ( model, Cmd.none ), NoOp )

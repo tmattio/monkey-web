@@ -1,11 +1,12 @@
 module Request.Helpers exposing (apiUrl, WebData, makeQuery, makeMutation, parseGraphQLError)
 
+import Http
 import Graphqelm.Http
 import Graphqelm.Http.GraphqlError
 import Graphqelm.Operation exposing (RootQuery, RootMutation)
 import Graphqelm.SelectionSet exposing (SelectionSet)
 import RemoteData exposing (RemoteData)
-import Data exposing (Session)
+import Data.Auth exposing (Session)
 
 
 apiUrl : String
@@ -51,4 +52,9 @@ parseGraphQLError error =
                 |> String.concat
 
         Graphqelm.Http.HttpError httpError ->
-            "Http error " ++ toString httpError
+        case httpError of
+            Http.NetworkError ->
+                "Possible explanations are you turned off your wifi, went in a cave, etc."
+        
+            _ ->
+                "Bad HTTP Error, bad! " ++ toString httpError

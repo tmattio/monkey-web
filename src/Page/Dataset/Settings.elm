@@ -20,7 +20,7 @@ import Page.Error exposing (PageLoadError, pageLoadError)
 import Route exposing (Route)
 import Task exposing (Task)
 import Request.Helpers exposing (WebData, makeQuery, makeMutation)
-import Data exposing (User, Session)
+import Data.Auth exposing (User, Session)
 import Views.Form as Form
 import Views.Title exposing (viewTitle)
 
