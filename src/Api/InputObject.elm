@@ -100,24 +100,19 @@ encodeImageBoundingBoxDefinitionInput input =
         [ ( "classes", (Encode.string |> Encode.list) input.classes |> Just ) ]
 
 
-buildImageBoundingBoxInput : (ImageBoundingBoxInputOptionalFields -> ImageBoundingBoxInputOptionalFields) -> ImageBoundingBoxInput
-buildImageBoundingBoxInput fillOptionals =
-    let
-        optionals =
-            fillOptionals
-                { class = Absent, xMax = Absent, xMin = Absent, yMax = Absent, yMin = Absent }
-    in
-    { class = optionals.class, xMax = optionals.xMax, xMin = optionals.xMin, yMax = optionals.yMax, yMin = optionals.yMin }
+buildImageBoundingBoxInput : ImageBoundingBoxInputRequiredFields -> ImageBoundingBoxInput
+buildImageBoundingBoxInput required =
+    { class = required.class, xMax = required.xMax, xMin = required.xMin, yMax = required.yMax, yMin = required.yMin }
 
 
-type alias ImageBoundingBoxInputOptionalFields =
-    { class : OptionalArgument String, xMax : OptionalArgument Float, xMin : OptionalArgument Float, yMax : OptionalArgument Float, yMin : OptionalArgument Float }
+type alias ImageBoundingBoxInputRequiredFields =
+    { class : String, xMax : Float, xMin : Float, yMax : Float, yMin : Float }
 
 
 {-| Type for the ImageBoundingBoxInput input object.
 -}
 type alias ImageBoundingBoxInput =
-    { class : OptionalArgument String, xMax : OptionalArgument Float, xMin : OptionalArgument Float, yMax : OptionalArgument Float, yMin : OptionalArgument Float }
+    { class : String, xMax : Float, xMin : Float, yMax : Float, yMin : Float }
 
 
 {-| Encode a ImageBoundingBoxInput into a value that can be used as an argument.
@@ -125,7 +120,7 @@ type alias ImageBoundingBoxInput =
 encodeImageBoundingBoxInput : ImageBoundingBoxInput -> Value
 encodeImageBoundingBoxInput input =
     Encode.maybeObject
-        [ ( "class", Encode.string |> Encode.optional input.class ), ( "xMax", Encode.float |> Encode.optional input.xMax ), ( "xMin", Encode.float |> Encode.optional input.xMin ), ( "yMax", Encode.float |> Encode.optional input.yMax ), ( "yMin", Encode.float |> Encode.optional input.yMin ) ]
+        [ ( "class", Encode.string input.class |> Just ), ( "xMax", Encode.float input.xMax |> Just ), ( "xMin", Encode.float input.xMin |> Just ), ( "yMax", Encode.float input.yMax |> Just ), ( "yMin", Encode.float input.yMin |> Just ) ]
 
 
 buildImageClassDefinitionInput : ImageClassDefinitionInputRequiredFields -> ImageClassDefinitionInput
@@ -151,24 +146,19 @@ encodeImageClassDefinitionInput input =
         [ ( "classes", (Encode.string |> Encode.list) input.classes |> Just ) ]
 
 
-buildImageClassInput : (ImageClassInputOptionalFields -> ImageClassInputOptionalFields) -> ImageClassInput
-buildImageClassInput fillOptionals =
-    let
-        optionals =
-            fillOptionals
-                { class = Absent }
-    in
-    { class = optionals.class }
+buildImageClassInput : ImageClassInputRequiredFields -> ImageClassInput
+buildImageClassInput required =
+    { class = required.class }
 
 
-type alias ImageClassInputOptionalFields =
-    { class : OptionalArgument String }
+type alias ImageClassInputRequiredFields =
+    { class : String }
 
 
 {-| Type for the ImageClassInput input object.
 -}
 type alias ImageClassInput =
-    { class : OptionalArgument String }
+    { class : String }
 
 
 {-| Encode a ImageClassInput into a value that can be used as an argument.
@@ -176,7 +166,7 @@ type alias ImageClassInput =
 encodeImageClassInput : ImageClassInput -> Value
 encodeImageClassInput input =
     Encode.maybeObject
-        [ ( "class", Encode.string |> Encode.optional input.class ) ]
+        [ ( "class", Encode.string input.class |> Just ) ]
 
 
 buildLabelDefinitionInput : (LabelDefinitionInputOptionalFields -> LabelDefinitionInputOptionalFields) -> LabelDefinitionInput

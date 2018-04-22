@@ -111,7 +111,14 @@ setRoute route model =
                         ( { model | pageState = Loaded LandingPage }, Cmd.none )
 
             Just (Route.Label owner datasetName) ->
-                transition LabelLoaded (Label.init model.session owner datasetName)
+                case model.session of
+                    Just s ->
+                        transition LabelLoaded (Label.init s owner datasetName)
+
+                    Nothing ->
+                        pageErrored model
+                            Page.Other
+                            "You must be signed in to edit datasets."
 
             Just Route.Features ->
                 ( { model | pageState = Loaded Features }, Cmd.none )
@@ -236,7 +243,12 @@ updatePage page msg model =
                 ( { model | pageState = Loaded (Error error) }, Cmd.none )
 
             ( LabelMsg subMsg, Label subModel ) ->
-                toPage Label LabelMsg (Label.update) subMsg subModel
+                case model.session of
+                    Just s ->
+                        toPage Label LabelMsg (Label.update s) subMsg subModel
+
+                    Nothing ->
+                        ( model, Cmd.none )
 
             ( ProfileLoaded (Ok subModel), _ ) ->
                 ( { model | pageState = Loaded (Profile subModel) }, Cmd.none )
@@ -449,9 +461,15 @@ viewPage session isLoading page =
                     |> Html.Styled.map DashboardMsg
 
             Label subModel ->
-                Label.view session subModel
-                    |> layout Page.Fluid Page.Label
-                    |> Html.Styled.map LabelMsg
+                case session of
+                    Just s ->
+                        Label.view s subModel
+                            |> layout Page.Fluid Page.Label
+                            |> Html.Styled.map LabelMsg
+
+                    Nothing ->
+                        Error.view session (pageLoadError Page.CreateDataset "Cannot access")
+                            |> layout Page.Landing Page.Other
 
             Profile subModel ->
                 Profile.view session subModel

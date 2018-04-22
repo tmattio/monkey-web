@@ -25,9 +25,9 @@ selection constructor =
     Object.selection constructor
 
 
-class : Field (Maybe String) Api.Object.ImageClass
+class : Field String Api.Object.ImageClass
 class =
-    Object.fieldDecoder "class" [] (Decode.string |> Decode.nullable)
+    Object.fieldDecoder "class" [] Decode.string
 
 
 datapoint : SelectionSet decodesTo Api.Object.Image -> Field decodesTo Api.Object.ImageClass

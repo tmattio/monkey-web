@@ -11,7 +11,7 @@ import Data.Dataset
     exposing
         ( Dataset
         , ImageRecord
-        , DatapointUnion(..)
+        , Datapoint(..)
         , DatasetType(..)
         , datasetType
         , getImages

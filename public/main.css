@@ -143,3 +143,19 @@ div:hover > .features-icons-icon i{font-size:5rem}
   background-size: 100%;
   opacity: 0.95;
 }
+
+.image-classification {
+  height: 100%;
+  width: 100%;
+}
+
+.image-classification .image-viewer {
+  width: 100%;
+  max-height: 80%;
+}
+
+.image-classification .image-viewer img {
+  display: block;
+  width: 100%;
+}
+.image-classification .labels {}

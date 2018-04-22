@@ -25,9 +25,9 @@ selection constructor =
     Object.selection constructor
 
 
-class : Field (Maybe String) Api.Object.ImageBoundingBox
+class : Field String Api.Object.ImageBoundingBox
 class =
-    Object.fieldDecoder "class" [] (Decode.string |> Decode.nullable)
+    Object.fieldDecoder "class" [] Decode.string
 
 
 datapoint : SelectionSet decodesTo Api.Object.Image -> Field decodesTo Api.Object.ImageBoundingBox
@@ -40,21 +40,21 @@ id =
     Object.fieldDecoder "id" [] (Decode.oneOf [ Decode.string, Decode.float |> Decode.map toString, Decode.int |> Decode.map toString, Decode.bool |> Decode.map toString ] |> Decode.map Api.Scalar.Id)
 
 
-xMax : Field (Maybe Float) Api.Object.ImageBoundingBox
+xMax : Field Float Api.Object.ImageBoundingBox
 xMax =
-    Object.fieldDecoder "xMax" [] (Decode.float |> Decode.nullable)
+    Object.fieldDecoder "xMax" [] Decode.float
 
 
-xMin : Field (Maybe Float) Api.Object.ImageBoundingBox
+xMin : Field Float Api.Object.ImageBoundingBox
 xMin =
-    Object.fieldDecoder "xMin" [] (Decode.float |> Decode.nullable)
+    Object.fieldDecoder "xMin" [] Decode.float
 
 
-yMax : Field (Maybe Float) Api.Object.ImageBoundingBox
+yMax : Field Float Api.Object.ImageBoundingBox
 yMax =
-    Object.fieldDecoder "yMax" [] (Decode.float |> Decode.nullable)
+    Object.fieldDecoder "yMax" [] Decode.float
 
 
-yMin : Field (Maybe Float) Api.Object.ImageBoundingBox
+yMin : Field Float Api.Object.ImageBoundingBox
 yMin =
-    Object.fieldDecoder "yMin" [] (Decode.float |> Decode.nullable)
+    Object.fieldDecoder "yMin" [] Decode.float
