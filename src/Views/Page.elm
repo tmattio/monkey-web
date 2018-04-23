@@ -2,7 +2,7 @@ module Views.Page exposing (ActivePage(..), Layout(..), layout, init, update, Mo
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
-import Html.Styled.Events exposing (onInput)
+import Html.Attributes
 import Css.Foreign exposing (global)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
@@ -26,6 +26,7 @@ type ActivePage
     | Explore
     | Profile
     | PreviewDataset
+    | InsightsDataset
     | SettingsDataset
     | CreateDataset
     | Settings
@@ -35,6 +36,7 @@ type Layout
     = Blank
     | Landing
     | Fluid
+    | App
     | FullPage
 
 
@@ -47,7 +49,7 @@ layout session isLoading layout page content =
                     ( [ global globalWithNavbar |> toUnstyled
                       , viewHeader session page |> toUnstyled
                       ]
-                    , Grid.containerFluid
+                    , Grid.containerFluid []
                     )
 
                 Landing ->
@@ -56,7 +58,7 @@ layout session isLoading layout page content =
                       , content |> toUnstyled
                       , viewFooterLanding |> toUnstyled
                       ]
-                    , Grid.containerFluid
+                    , Grid.containerFluid []
                     )
 
                 Fluid ->
@@ -65,17 +67,25 @@ layout session isLoading layout page content =
                       , content |> toUnstyled
                       , viewFooter |> toUnstyled
                       ]
-                    , Grid.containerFluid
+                    , Grid.containerFluid []
+                    )
+
+                App ->
+                    ( [ global globalWithNavbar |> toUnstyled
+                      , viewHeader session page |> toUnstyled
+                      , content |> toUnstyled
+                      ]
+                    , Grid.containerFluid [Html.Attributes.class "app"]
                     )
 
                 FullPage ->
                     ( [ global globalFull |> toUnstyled
                       , content |> toUnstyled
                       ]
-                    , Grid.containerFluid
+                    , Grid.containerFluid []
                     )
     in
-        container []
+        container
             ([ CDN.stylesheet ] ++ innerLayout)
             |> Html.Styled.fromUnstyled
 

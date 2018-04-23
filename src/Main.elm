@@ -20,6 +20,7 @@ import Page.Search as Search
 import Page.Login as Login
 import Page.Register as Register
 import Page.Dataset.Preview as PreviewDataset
+import Page.Dataset.Insights as InsightsDataset
 import Page.Dataset.Settings as SettingsDataset
 import Page.Dataset.Create as CreateDataset
 import Page.Settings as Settings
@@ -52,6 +53,7 @@ type Page
     | Profile Profile.Model
     | Explore Explore.Model
     | PreviewDataset PreviewDataset.Model
+    | InsightsDataset InsightsDataset.Model
     | SettingsDataset SettingsDataset.Model
     | CreateDataset CreateDataset.Model
     | Settings Settings.Model
@@ -75,6 +77,7 @@ type Msg
     | ProfileLoaded (Result PageLoadError Profile.Model)
     | ExploreLoaded (Result PageLoadError Explore.Model)
     | PreviewDatasetLoaded (Result PageLoadError PreviewDataset.Model)
+    | InsightsDatasetLoaded (Result PageLoadError InsightsDataset.Model)
     | SettingsDatasetLoaded (Result PageLoadError SettingsDataset.Model)
     | CreateDatasetLoaded (Result PageLoadError CreateDataset.Model)
     | SettingsLoaded (Result PageLoadError Settings.Model)
@@ -82,6 +85,7 @@ type Msg
     | RegisterMsg Register.Msg
     | ExploreMsg Explore.Msg
     | PreviewDatasetMsg PreviewDataset.Msg
+    | InsightsDatasetMsg InsightsDataset.Msg
     | SettingsDatasetMsg SettingsDataset.Msg
     | CreateDatasetMsg CreateDataset.Msg
     | SettingsMsg Settings.Msg
@@ -151,6 +155,9 @@ setRoute route model =
 
             Just (Route.PreviewDataset username datasetName) ->
                 transition PreviewDatasetLoaded (PreviewDataset.init model.session username datasetName)
+
+            Just (Route.InsightsDataset username datasetName) ->
+                transition InsightsDatasetLoaded (InsightsDataset.init model.session username datasetName)
 
             Just (Route.Profile username) ->
                 transition ProfileLoaded (Profile.init model.session username)
@@ -267,6 +274,15 @@ updatePage page msg model =
 
             ( PreviewDatasetMsg subMsg, PreviewDataset subModel ) ->
                 toPage PreviewDataset PreviewDatasetMsg (PreviewDataset.update model.session) subMsg subModel
+
+            ( InsightsDatasetLoaded (Ok subModel), _ ) ->
+                ( { model | pageState = Loaded (InsightsDataset subModel) }, Cmd.none )
+
+            ( InsightsDatasetLoaded (Err error), _ ) ->
+                ( { model | pageState = Loaded (Error error) }, Cmd.none )
+
+            ( InsightsDatasetMsg subMsg, InsightsDataset subModel ) ->
+                toPage InsightsDataset InsightsDatasetMsg (InsightsDataset.update model.session) subMsg subModel
 
             ( CreateDatasetLoaded (Ok subModel), _ ) ->
                 ( { model | pageState = Loaded (CreateDataset subModel) }, Cmd.none )
@@ -464,7 +480,7 @@ viewPage session isLoading page =
                 case session of
                     Just s ->
                         Label.view s subModel
-                            |> layout Page.Fluid Page.Label
+                            |> layout Page.App Page.Label
                             |> Html.Styled.map LabelMsg
 
                     Nothing ->
@@ -502,6 +518,11 @@ viewPage session isLoading page =
                 PreviewDataset.view session subModel
                     |> layout Page.Fluid Page.PreviewDataset
                     |> Html.Styled.map PreviewDatasetMsg
+
+            InsightsDataset subModel ->
+                InsightsDataset.view session subModel
+                    |> layout Page.Fluid Page.InsightsDataset
+                    |> Html.Styled.map InsightsDatasetMsg
 
             SettingsDataset subModel ->
                 case session of
@@ -550,6 +571,9 @@ pageSubscriptions page =
 
         CreateDataset model ->
             CreateDataset.subscriptions model |> Sub.map CreateDatasetMsg
+
+        Label model ->
+            Label.subscriptions model |> Sub.map LabelMsg
 
         _ ->
             Sub.none

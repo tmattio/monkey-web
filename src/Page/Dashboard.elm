@@ -103,7 +103,24 @@ view : Maybe Session -> Model -> Html Msg
 view session model =
     let
         successView r =
-            div [ class "row" ] (List.map viewDataset r.viewer.datasets)
+            case r.viewer.datasets of
+                [] ->
+                    div []
+                        [ h4 [ class "text-center" ]
+                            [ text "You don't have any dataset. Want to create one?"
+                            ]
+                        , p [ class "mt-4 text-center" ]
+                            [ a
+                                [ class "btn btn-lg btn-primary"
+                                , Route.href Route.CreateDataset
+                                ]
+                                [ text "Create a Dataset"
+                                ]
+                            ]
+                        ]
+
+                _ ->
+                    div [ class "row" ] (List.map viewDataset r.viewer.datasets)
 
         datasetView =
             viewWithError model.dataset successView

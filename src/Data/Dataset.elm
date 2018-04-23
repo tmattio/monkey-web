@@ -15,6 +15,7 @@ module Data.Dataset
         , ObjectDetectionDefinitionRecord
         , datasetType
         , labelType
+        , labelTypeFromString
         , getImages
         )
 
@@ -59,12 +60,14 @@ type alias DatapointRecord =
 type alias ImageRecord =
     { storagePath : String
     , label : List (Maybe Label)
+    , id : Api.Scalar.Id
     }
 
 
 type alias VideoRecord =
     { storagePath : String
     , labels : List (Maybe Label)
+    , id : Api.Scalar.Id
     }
 
 
@@ -121,7 +124,20 @@ labelType dataset =
         ( "Image Classification", ImageClassificationDefinition _ ) ->
             Just ImageClassification
 
-        ( "Object Detection", ObjectDetectionDefinition _ ) ->
+        ( "Image Object Detection", ObjectDetectionDefinition _ ) ->
+            Just ObjectDetection
+
+        _ ->
+            Nothing
+
+
+labelTypeFromString : String -> Maybe LabelType
+labelTypeFromString type_ =
+    case type_ of
+        "Image Classification" ->
+            Just ImageClassification
+
+        "Image Object Detection" ->
             Just ObjectDetection
 
         _ ->

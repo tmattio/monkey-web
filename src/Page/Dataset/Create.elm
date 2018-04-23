@@ -27,6 +27,7 @@ import Route exposing (Route)
 import Task exposing (Task)
 import Request.Helpers exposing (WebData, makeQuery, makeMutation)
 import Data.Auth exposing (User, Session)
+import Data.Dataset exposing (LabelType(..), labelTypeFromString)
 import Views.Form as Form
 import Views.Title exposing (viewTitle)
 import Views.Upload as Upload exposing (view, init, Model, Msg)
@@ -164,7 +165,7 @@ init session =
                     , dataTypes = types
                     , dataType = Nothing
                     , labelType = Nothing
-                    , labelDefinition = [ "test" ]
+                    , labelDefinition = []
                     , uploadModel = Upload.init
                     , uploading = False
                     , createdDataset = RemoteData.NotAsked
@@ -263,6 +264,7 @@ type Msg
     | SetDescription String
     | SetDataType String
     | SetLabelType String
+    | SetLabelDefinition String
     | CreateCompleted (WebData DatasetResponse)
     | UploadCompleted (WebData UploadResponse)
     | UploadMsg Upload.Msg
@@ -275,14 +277,23 @@ update session msg model =
             case validate modelValidator model of
                 [] ->
                     let
-                        inputObject =
+                        maybeInputObject =
                             modelToMutationArguments model
                     in
-                        ( { model | errors = [] }
-                        , createDatasetMutation inputObject
-                            |> makeMutation (Just session)
-                            |> Graphqelm.Http.send (RemoteData.fromResult >> CreateCompleted)
-                        )
+                        case maybeInputObject of
+                            Just inputObject ->
+                                ( { model | errors = [] }
+                                , createDatasetMutation inputObject
+                                    |> makeMutation (Just session)
+                                    |> Graphqelm.Http.send (RemoteData.fromResult >> CreateCompleted)
+                                )
+
+                            Nothing ->
+                                ( { model
+                                    | errors = [ ( Form, "Make sure you filled all the fields" ) ]
+                                  }
+                                , Cmd.none
+                                )
 
                 errors ->
                     ( { model | errors = errors }, Cmd.none )
@@ -298,6 +309,9 @@ update session msg model =
 
         SetLabelType labelType ->
             ( { model | labelType = labelTypeInModel model.dataTypes labelType }, Cmd.none )
+
+        SetLabelDefinition labelDefinitionString ->
+            ( { model | labelDefinition = String.split "," labelDefinitionString }, Cmd.none )
 
         UploadCompleted (RemoteData.Success _) ->
             case model.createdDataset of
@@ -368,19 +382,55 @@ modelValidator =
 -- INTERNAL --
 
 
-modelToMutationArguments : Model -> Mutation.CreateDatasetRequiredArguments
+modelToMutationArguments : Model -> Maybe Mutation.CreateDatasetRequiredArguments
 modelToMutationArguments model =
-    { dataset =
-        Api.InputObject.buildCreateDatasetInput
-            { name = model.name
-            , dataType = Maybe.withDefault "" model.dataType
-            , labelType = Maybe.withDefault "" model.labelType
-            , labelDefinition =
-                Api.InputObject.buildLabelDefinitionInput
-                    (\optionals -> { optionals | imageClassDefinition = Present { classes = model.labelDefinition } })
-            }
-            (\optionals -> { optionals | description = Present model.description })
-    }
+    case buildLabelDefinitionInput model of
+        Just labelDefinitionInput ->
+            Just
+                { dataset =
+                    Api.InputObject.buildCreateDatasetInput
+                        { name = model.name
+                        , dataType = Maybe.withDefault "" model.dataType
+                        , labelType = Maybe.withDefault "" model.labelType
+                        , labelDefinition = labelDefinitionInput
+                        }
+                        (\optionals -> { optionals | description = Present model.description })
+                }
+
+        Nothing ->
+            Nothing
+
+
+buildLabelDefinitionInput : Model -> Maybe Api.InputObject.LabelDefinitionInput
+buildLabelDefinitionInput model =
+    case model.labelType of
+        Just labelType ->
+            case labelTypeFromString labelType of
+                Just ImageClassification ->
+                    Just
+                        (Api.InputObject.buildLabelDefinitionInput
+                            (\optionals ->
+                                { optionals
+                                    | imageClassDefinition = Present { classes = model.labelDefinition }
+                                }
+                            )
+                        )
+
+                Just ObjectDetection ->
+                    Just
+                        (Api.InputObject.buildLabelDefinitionInput
+                            (\optionals ->
+                                { optionals
+                                    | imageBoundingBoxDefinition = Present { classes = model.labelDefinition }
+                                }
+                            )
+                        )
+
+                _ ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 stringToOption : String -> Html Msg
@@ -413,12 +463,14 @@ labelDefinitionInput labelType =
                 "Image Classification" ->
                     Form.input
                         [ placeholder "Type the classes for the image classification"
+                        , onInput SetLabelDefinition
                         ]
                         []
 
                 "Image Object Detection" ->
                     Form.input
                         [ placeholder "Type the classes for the image detection"
+                        , onInput SetLabelDefinition
                         ]
                         []
 

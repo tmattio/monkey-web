@@ -1,4 +1,10 @@
-module Request.Dataset exposing (getDataset)
+module Request.Dataset
+    exposing
+        ( getDataset
+        , datapoint
+        , label
+        , labelDefinition
+        )
 
 import Api.Object
 import Api.Object.User
@@ -100,6 +106,7 @@ imageSelection =
     Api.Object.Image.selection ImageRecord
         |> with Api.Object.Image.storagePath
         |> with (Api.Object.Image.labels label)
+        |> with Api.Object.Image.id
         |> SelectionSet.map Image
 
 
@@ -108,6 +115,7 @@ videoSelection =
     Api.Object.Video.selection VideoRecord
         |> with Api.Object.Video.storagePath
         |> with (Api.Object.Video.labels label)
+        |> with Api.Object.Video.id
         |> SelectionSet.map Video
 
 

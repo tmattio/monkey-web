@@ -1,9 +1,12 @@
 module Page.Label.ImageClassification exposing (view, init, Model, update, Msg)
 
+import Api.InputObject exposing (LabelInput, ImageClassInput, buildLabelInput, buildImageClassInput)
+import Graphqelm.OptionalArgument exposing (OptionalArgument(Present))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
+import Html.Styled.Events exposing (onClick)
 import Data.Auth exposing (Session)
-import Data.Dataset exposing (ImageRecord, ImageClassificationDefinitionRecord)
+import Data.Dataset exposing (ImageRecord, ImageClassificationLabelRecord, ImageClassificationDefinitionRecord)
 import Data.Label exposing (LabelInterfaceMsg(..))
 
 
@@ -21,16 +24,25 @@ init session datapoint labelDefinition =
 
 
 type Msg
-    = PointerDownAt ( Float, Float )
-    | PointerMoveAt ( Float, Float )
-    | PointerUp
+    = Label String
 
 
 update : Msg -> Model -> ( ( Model, Cmd Msg ), LabelInterfaceMsg )
 update msg model =
     case msg of
-        _ ->
-            ( ( model, Cmd.none ), NoOp )
+        Label label ->
+            let
+                labelInput =
+                    buildLabelInput
+                        (\optionals ->
+                            { optionals
+                                | imageClass =
+                                    Present
+                                        (buildImageClassInput { class = label })
+                            }
+                        )
+            in
+                ( ( model, Cmd.none ), LabelDatapoint labelInput )
 
 
 view : Session -> Model -> Html Msg
@@ -41,13 +53,23 @@ view session model =
         ]
 
 
-viewImage : String -> Html msg
+viewImage : String -> Html Msg
 viewImage url =
     div [ class "image-viewer" ]
         [ img [ src url ] []
         ]
 
 
-viewLabels : List String -> Html msg
+viewLabels : List String -> Html Msg
 viewLabels labels =
-    div [ class "labels" ] (List.map text labels)
+    div [ class "labels" ] (List.map viewLabel labels)
+
+
+viewLabel : String -> Html Msg
+viewLabel label =
+    button
+        [ type_ "button"
+        , class "btn btn-md btn-primary"
+        , onClick (Label label)
+        ]
+        [ text label ]

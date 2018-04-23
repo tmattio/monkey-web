@@ -1,4 +1,4 @@
-module Page.Dataset.Preview exposing (view, update, Model, Msg, init)
+module Page.Dataset.Insights exposing (view, update, Model, Msg, init)
 
 import Api.Object
 import Api.Object.DatasetExportPayload
@@ -86,93 +86,35 @@ init session username datasetName =
 
 view : Maybe Session -> Model -> Html Msg
 view session model =
-    let
-        successView dataset =
-            div []
-                [ a
-                    [ Route.href (Route.SettingsDataset model.owner dataset.slug), class "btn btn-lg btn-success" ]
-                    [ text "Settings" ]
-                , a
-                    [ Route.href (Route.Label model.owner dataset.slug), class "btn btn-lg btn-primary ml-3" ]
-                    [ text "Label" ]
-                , a
-                    [ Route.href (Route.InsightsDataset model.owner dataset.slug), class "btn btn-lg btn-danger ml-3" ]
-                    [ text "Insights" ]
-                , viewExportDataset model
-                , div
-                    [ class "row", style [ ( "margin-top", "10px" ) ] ]
-                    [ previewDataset dataset
+    main_ [ attribute "role" "main" ]
+        [ viewTitle "Dataset Insights"
+        , div [ class "container" ]
+            [ div [ class "card mb-3" ]
+                [ div [ class "card-header" ]
+                    [ i [ class "fa fa-area-chart" ]
+                        []
+                    , text
+                        "Area Chart Example"
                     ]
-                ]
-
-        datasetView =
-            viewWithError model.dataset successView
-    in
-        main_ [ attribute "role" "main" ]
-            [ viewTitle "Preview Dataset"
-            , div [ class "container" ]
-                [ datasetView
-                ]
-            ]
-
-
-viewExportDataset : Model -> Html Msg
-viewExportDataset model =
-    case model.exportedDataset of
-        RemoteData.Success url ->
-            a
-                [ href url
-                , target "_blank"
-                , class "btn btn-lg btn-info ml-3"
-                ]
-                [ text "Download" ]
-
-        RemoteData.NotAsked ->
-            button [ class "btn btn-lg btn-info ml-3", onClick ExportDataset ]
-                [ text "Export" ]
-
-        RemoteData.Loading ->
-            button [ class "btn btn-lg btn-info ml-3" ]
-                [ text "Loading..." ]
-
-        RemoteData.Failure _ ->
-            button [ class "btn btn-lg btn-info ml-3" ]
-                [ text "Ooops" ]
-
-
-datasetCard : Dataset -> Html Msg
-datasetCard dataset =
-    let
-        datasetImage =
-            case dataset.thumbnailUrl of
-                Just url ->
-                    url
-
-                Nothing ->
-                    "https://picsum.photos/286/180"
-    in
-        div [ class "col-md-4" ]
-            [ div [ class "card mb-4 box-shadow" ]
-                [ img [ class "card-img-top", src datasetImage, alt "Card image cap" ]
-                    []
                 , div [ class "card-body" ]
-                    [ p [ class "card-text" ]
-                        [ text (Maybe.withDefault "" dataset.description) ]
-                    , div [ class "d-flex justify-content-between align-items-center" ]
-                        [ div [ class "btn-group" ]
-                            [ a [ Route.href (Route.PreviewDataset dataset.owner dataset.slug) ]
-                                [ button [ type_ "button", class "btn btn-sm btn-outline-secondary" ]
-                                    [ text "View" ]
-                                ]
-                            , button [ type_ "button", class "btn btn-sm btn-outline-secondary" ]
-                                [ text "Star" ]
+                    [ div [ class "chartjs-size-monitor", style [ ( "position", "absolute" ), ( "left", "0px" ), ( "top", "0px" ), ( "right", "0px" ), ( "bottom", "0px" ), ( "overflow", "hidden" ), ( "pointer-events", "none" ), ( "visibility", "hidden" ), ( "z-index", "-1" ) ] ]
+                        [ div [ class "chartjs-size-monitor-expand", style [ ( "position", "absolute" ), ( "left", "0" ), ( "top", "0" ), ( "right", "0" ), ( "bottom", "0" ), ( "overflow", "hidden" ), ( "pointer-events", "none" ), ( "visibility", "hidden" ), ( "z-index", "-1" ) ] ]
+                            [ div [ style [ ( "position", "absolute" ), ( "width", "1000000px" ), ( "height", "1000000px" ), ( "left", "0" ), ( "top", "0" ) ] ]
+                                []
                             ]
-                        , small [ class "text-muted" ]
-                            [ text "127K samples" ]
+                        , div [ class "chartjs-size-monitor-shrink", style [ ( "position", "absolute" ), ( "left", "0" ), ( "top", "0" ), ( "right", "0" ), ( "bottom", "0" ), ( "overflow", "hidden" ), ( "pointer-events", "none" ), ( "visibility", "hidden" ), ( "z-index", "-1" ) ] ]
+                            [ div [ style [ ( "position", "absolute" ), ( "width", "200%" ), ( "height", "200%" ), ( "left", "0" ), ( "top", "0" ) ] ]
+                                []
+                            ]
                         ]
+                    , canvas [ id "myAreaChart", width 1358, height 406, class "chartjs-render-monitor", style [ ( "display", "block" ), ( "height", "203px" ), ( "width", "679px" ) ] ]
+                        []
                     ]
+                , div [ class "card-footer small text-muted" ]
+                    [ text "Updated yesterday at 11:59 PM" ]
                 ]
             ]
+        ]
 
 
 
@@ -207,3 +149,4 @@ modelToExportInputObject model =
     { owner = model.owner
     , name = model.datasetName
     }
+

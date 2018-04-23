@@ -20,12 +20,15 @@ import Data.Dataset
 
 previewImages : List ImageRecord -> Html msg
 previewImages images =
-    div [] (List.map previewImage images)
+    div [ class "row text-center text-lg-left" ]
+        (List.map previewImage images)
 
 
 previewImage : ImageRecord -> Html msg
 previewImage image =
-    img [ src image.storagePath ] []
+    div [ class "col-lg-3 col-md-4 col-xs-6" ]
+        [ img [ class "img-fluid img-thumbnail", src image.storagePath, alt "" ] []
+        ]
 
 
 previewDataset : Dataset -> Html msg

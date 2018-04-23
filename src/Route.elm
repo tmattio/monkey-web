@@ -22,6 +22,7 @@ type Route
     | Pricing
     | Profile String
     | PreviewDataset String String
+    | InsightsDataset String String
     | SettingsDataset String String
     | Label String String
     | CreateDataset
@@ -49,6 +50,7 @@ routeMatcher =
         , Url.map CreateDataset (s "new")
         , Url.map Profile (string)
         , Url.map PreviewDataset (string </> string)
+        , Url.map InsightsDataset (string </> string </> s "insights")
         , Url.map SettingsDataset (string </> string </> s "settings")
         , Url.map Label (string </> string </> s "label")
         ]
@@ -101,6 +103,9 @@ routeToString page =
 
                 PreviewDataset username datasetName ->
                     [ username, slugify datasetName ]
+
+                InsightsDataset username datasetName ->
+                    [ username, slugify datasetName, "insights" ]
 
                 SettingsDataset username datasetName ->
                     [ username, slugify datasetName, "settings" ]

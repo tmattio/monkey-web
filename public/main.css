@@ -144,18 +144,48 @@ div:hover > .features-icons-icon i{font-size:5rem}
   opacity: 0.95;
 }
 
-.image-classification {
+div.app {
+  height: 100% !important;
+}
+
+.image-classification, #viewer {
   height: 100%;
   width: 100%;
 }
 
+#viewer {
+  background-color: #eee;
+}
+
 .image-classification .image-viewer {
   width: 100%;
-  max-height: 80%;
+  height: 90%;
+  background-color: #eee;
 }
 
 .image-classification .image-viewer img {
   display: block;
-  width: 100%;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
 }
-.image-classification .labels {}
+
+.image-classification .labels {
+  height: 10%;
+  background: white;
+  text-align: center;
+  padding: 10px;
+  min-height: 70px;
+}
+
+.image-classification .labels button {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+
+@media (min-width: 576px) {
+.jumbotron {
+    padding: 2.2rem 2rem !important;
+}
+}
